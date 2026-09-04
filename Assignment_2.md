@@ -1,0 +1,509 @@
+# AESD Assignment 2 - File Operations and Cross Compiler
+
+
+## PART 1: Setting up SSH Access To your Github Repo
+
+https://github.com/cu-ecen-aeld/aesd-assignments/wiki/Setting-up-SSH-Access-To-your-Repo
+
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?platform=linux
+
+### Follow the procedure on your Ubuntu Host
+
+## 1. Generating a new SSH key
+
+* You can generate a new SSH key on your local machine. After you generate the key, you can add the public key to your account on GitHub.com to enable authentication for Git operations over SSH.
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/aesd-secure-key -C "aesd-github-push-pull-key" -N ""
+```
+
+![alt text](assets/image.png)
+
+```bash
+chmod 600 ~/.ssh/aesd-secure-key
+chmod 644 ~/.ssh/aesd-secure-key.pub
+```
+
+```bash
+cat ~/.ssh/aesd-secure-key.pub 
+```
+
+```bash
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDledxF1Oi86xP8DFkCO7hubAqdtTBjiI4leRX0Q2lui aesd-github-push-pull-key
+```
+
+## 2. Load it locally and verify
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/aesd-secure-key
+ssh-add -l
+```
+
+![alt text](assets/image-1.png)
+
+## 3. Adding a new SSH key to your GitHub account
+
+```bash
+cat ~/.ssh/aesd-secure-key.pub 
+```
+
+```bash
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDledxF1Oi86xP8DFkCO7hubAqdtTBjiI4leRX0Q2lui aesd-github-push-pull-key
+```
+
+1. Copy the SSH public key to your clipboard.
+
+1. In the upper-right corner of any page on GitHub, click your profile picture, then click  Settings.
+
+1. In the "Access" section of the sidebar, click  SSH and GPG keys.
+
+1. Click New SSH key or Add SSH key.
+
+1. In the "Title" field, add a descriptive label for the new key. For example, if you're using a personal laptop, you might call this key "Personal laptop".
+
+1. Select the type of key, either authentication or signing. For more information about commit signing, see About commit signature verification.
+
+1. In the "Key" field, paste your public key.
+
+1. Click Add SSH key.
+
+1. If prompted, confirm access to your account on GitHub. For more information, see Sudo mode.
+
+## PART 2: Then use these commands in git bash to prepare your assignment repository:
+
+
+```bash
+git remote remove origin
+git remote add assignments-base git@github.com:cu-ecen-aeld/aesd-assignments.git
+git remote add origin git@github.com:prashantgautamofficial/aeld-assignment-2.git
+git fetch assignments-base
+```
+
+![alt text](assets/image-2.png)
+
+```bash
+git merge assignments-base/assignment2
+git submodule update --init --recursive
+```
+
+![alt text](assets/image-3.png)
+
+```bash
+git push origin main
+```
+
+![alt text](assets/image-4.png)
+
+## Suggested Reading: 
+
+1. Module 1 content
+
+1. Linux System Programming Chapter 2.
+
+1. Mastering Embedded Linux Programming Chapters 1 and 2.
+
+1. Look for man pages to get a detailed description of the system calls/C library function.  For example: Type- “man fopen” on the terminal.  See also the man page links below.
+
+If you have limited experience with makefiles, I suggest the content at  
+https://www.gnu.org/software/make/manual/html_node/Simple-Makefile.html
+
+or
+
+https://makefiletutorial.com/
+
+https://linux.die.net/man/3/syslog
+
+https://linux.die.net/man/8/syslogd
+
+http://man7.org/linux/man-pages/man2/time.2.html
+
+http://man7.org/linux/man-pages/man3/ctime.3.html
+
+---
+
+## PART 3: Implementation - Setup an ARM cross compile toolchain
+
+## Official Installation Steps
+
+*Source: [AESD wiki — Installing an ARM aarch64 developer toolchain](https://github.com/cu-ecen-aeld/aesd-assignments/wiki/Installing-an-ARM-aarch64-developer-toolchain)*
+
+### If you're on Ubuntu 22.04 (recommended baseline for this course)
+
+1. Go to <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>
+2. Find the download link for **`AArch64 GNU/Linux target (aarch64-none-linux-gnu)`**
+   under the **`x86_64 Linux hosted cross toolchains`** section.
+   - Use **`arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz`** —
+     this exact version for compatibility with the assignment test frameworks.
+3. Checking the MD5 is optional — you can skip straight to extraction (see
+   Part B if you hit errors here).
+4. Add the toolchain to your `PATH` via `~/.bashrc`:
+
+   ```bash
+   export PATH=$PATH:/path/to/install/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/bin
+   ```
+
+   `/path/to/install` can be anywhere on the root filesystem (but should
+   **not** be checked into revision control). A common convention is your
+   home directory plus an `arm-cross-compiler` subdirectory, or a shared
+   system path like `/usr/local/arm-cross-compiler/install/`.
+
+### If you're on Ubuntu 20.04
+
+Use the older toolchain series instead:
+
+1. Go to <https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads>
+2. Find **`AArch64 GNU/Linux target (aarch64-none-linux-gnu)`**
+   - Use **AArch64 10.3-2021.07-x86_64** for compatibility with the test
+     frameworks.
+3. Same extraction and `PATH` steps as above, adjusted for the versioned
+   directory name:
+
+   ```bash
+   export PATH=$PATH:/path/to/install/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/bin
+   ```
+
+## Quick Reference — Full Command Sequence
+
+```bash
+# 1. Create destination directory
+sudo mkdir -p /usr/local/arm-cross-compiler/install
+
+# 2. Extract archive into it
+sudo tar xJf ~/Documents/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz \
+  -C /usr/local/arm-cross-compiler/install
+
+# 3. Add to PATH
+echo 'export PATH=$PATH:/usr/local/arm-cross-compiler/install/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/bin' >> ~/.bashrc
+source ~/.bashrc
+
+# 4. Verify
+aarch64-none-linux-gnu-gcc --version
+```
+
+---
+
+## PART 4: Implementation - Setup an ARM cross compile toolchain
+
+### 1. Generate cross compiler information
+
+```bash
+cd ~/Documents/aeld-assignment-2
+
+{
+  echo "=== Version ==="
+  aarch64-none-linux-gnu-gcc --version
+  echo ""
+  echo "=== Configuration ==="
+  aarch64-none-linux-gnu-gcc -v 2>&1
+  echo ""
+  echo "=== Sysroot ==="
+  aarch64-none-linux-gnu-gcc -print-sysroot
+} > assignments/assignment2/cross-compile.txt
+
+cat assignments/assignment2/cross-compile.txt
+```
+
+![alt text](assets/image-5.png)
+
+### 2. Modify `finder-test.sh` inside finder-app directory
+
+```bash
+cd ~/Documents/aeld-assignment-2/finder-app/
+```
+
+
+```bash
+#!/bin/sh
+# Tester script for assignment 1 and assignment 2
+# Author: Siddhant Jajoo
+
+set -e
+set -u
+
+NUMFILES=10
+WRITESTR=AELD_IS_FUN
+WRITEDIR=/tmp/aeld-data
+username=$(cat conf/username.txt)
+
+if [ $# -lt 3 ]
+then
+	echo "Using default value ${WRITESTR} for string to write"
+	if [ $# -lt 1 ]
+	then
+		echo "Using default value ${NUMFILES} for number of files to write"
+	else
+		NUMFILES=$1
+	fi	
+else
+	NUMFILES=$1
+	WRITESTR=$2
+	WRITEDIR=/tmp/aeld-data/$3
+fi
+
+MATCHSTR="The number of files are ${NUMFILES} and the number of matching lines are ${NUMFILES}"
+
+echo "Writing ${NUMFILES} files containing string ${WRITESTR} to ${WRITEDIR}"
+
+rm -rf "${WRITEDIR}"
+
+# create $WRITEDIR if not assignment1
+assignment=`cat ../conf/assignment.txt`
+if [ $assignment != 'assignment1' ]
+then
+	mkdir -p "$WRITEDIR"
+
+	#The WRITEDIR is in quotes because if the directory path consists of spaces, then variable substitution will consider it as multiple argument.
+	#The quotes signify that the entire string in WRITEDIR is a single string.
+	#This issue can also be resolved by using double square brackets i.e [[ ]] instead of using quotes.
+	if [ -d "$WRITEDIR" ]
+	then
+		echo "$WRITEDIR created"
+	else
+		exit 1
+	fi
+fi
+
+echo "Removing the old writer utility and compiling as a native application"
+make clean
+make
+
+for i in $( seq 1 $NUMFILES)
+do
+	./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+done
+
+OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
+
+# remove temporary directories
+rm -rf /tmp/aeld-data
+
+set +e
+echo ${OUTPUTSTRING} | grep "${MATCHSTR}"
+if [ $? -eq 0 ]; then
+	echo "success"
+	exit 0
+else
+	echo "failed: expected  ${MATCHSTR} in ${OUTPUTSTRING} but instead found"
+	exit 1
+fi
+```
+
+### 3. Create `writer.c` inside finder-app directory
+
+```bash
+cd ~/Documents/aeld-assignment-2/finder-app/
+gedit writer.c
+```
+
+```c
+/*
+ * writer.c
+ *
+ * C replacement for the writer.sh test script from Assignment 1.
+ *
+ * Usage:
+ *   writer <writefile> <writestr>
+ *
+ * Writes <writestr> to <writefile> using File I/O (open/write/close).
+ * Assumes the directory containing <writefile> already exists; the
+ * caller is responsible for creating it (unlike writer.sh, this
+ * program will NOT create any directories).
+ *
+ * Logging:
+ *   - Uses syslog with LOG_USER facility.
+ *   - LOG_DEBUG: "Writing <writestr> to <writefile>"
+ *   - LOG_ERR:   any unexpected error conditions
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <syslog.h>
+
+int main(int argc, char *argv[])
+{
+    const char *writefile;
+    const char *writestr;
+    int fd;
+    ssize_t bytes_written;
+    size_t len;
+
+    /* Open syslog with LOG_USER facility, tagging messages with the
+     * program name and including the PID for traceability. */
+    openlog("writer", LOG_PID | LOG_CONS, LOG_USER);
+
+    if (argc != 3) {
+        syslog(LOG_ERR,
+               "Invalid number of arguments: %d (expected 2: <writefile> <writestr>)",
+               argc - 1);
+        fprintf(stderr,
+                "Usage: %s <writefile> <writestr>\n", argv[0]);
+        closelog();
+        return 1;
+    }
+
+    writefile = argv[1];
+    writestr = argv[2];
+
+    /* Open (or create/truncate) the target file for writing.
+     * We do NOT create any missing parent directories - the caller
+     * is expected to have created them already. */
+    fd = open(writefile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
+        syslog(LOG_ERR, "Could not open/create file '%s': %s",
+               writefile, strerror(errno));
+        fprintf(stderr, "Error: could not open '%s': %s\n",
+                writefile, strerror(errno));
+        closelog();
+        return 1;
+    }
+
+    len = strlen(writestr);
+    bytes_written = write(fd, writestr, len);
+    if (bytes_written == -1) {
+        syslog(LOG_ERR, "Error writing to file '%s': %s",
+               writefile, strerror(errno));
+        fprintf(stderr, "Error: could not write to '%s': %s\n",
+                writefile, strerror(errno));
+        close(fd);
+        closelog();
+        return 1;
+    }
+
+    if ((size_t)bytes_written != len) {
+        syslog(LOG_ERR,
+               "Short write to file '%s': wrote %zd of %zu bytes",
+               writefile, bytes_written, len);
+        fprintf(stderr,
+                "Error: short write to '%s' (%zd of %zu bytes)\n",
+                writefile, bytes_written, len);
+        close(fd);
+        closelog();
+        return 1;
+    }
+
+    /* Required debug-level syslog message documenting the write. */
+    syslog(LOG_DEBUG, "Writing %s to %s", writestr, writefile);
+
+    if (close(fd) == -1) {
+        syslog(LOG_ERR, "Error closing file '%s': %s",
+               writefile, strerror(errno));
+        fprintf(stderr, "Error: could not close '%s': %s\n",
+                writefile, strerror(errno));
+        closelog();
+        return 1;
+    }
+
+    closelog();
+    return 0;
+}
+```
+
+### 4. Create `Makefile` inside finder-app directory
+
+```bash
+cd ~/Documents/aeld-assignment-2/finder-app/
+gedit Makefile
+```
+
+```bash
+# Makefile for the "writer" application (finder-app)
+#
+# Usage:
+#   Native build:
+#       make
+#     or
+#       make all
+#
+#   Cross-compile build (e.g. for aarch64 target):
+#       make CROSS_COMPILE=aarch64-none-linux-gnu-
+#
+#   Clean build artifacts:
+#       make clean
+#
+# CROSS_COMPILE is empty by default, which causes CC to resolve to the
+# native "gcc". When CROSS_COMPILE is set on the command line, CC
+# becomes e.g. "aarch64-none-linux-gnu-gcc", selecting the cross
+# compiler installed in the toolchain.
+
+CROSS_COMPILE ?=
+CC := $(CROSS_COMPILE)gcc
+
+CFLAGS ?= -Wall -Wextra -g -O0
+LDFLAGS ?=
+
+TARGET := writer
+SRCS := writer.c
+OBJS := $(SRCS:.c=.o)
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(TARGET) $(OBJS)
+```
+
+### 5. Verify using `full-test.sh`
+
+```bash
+cd ~/Documents/aeld-assignment-2/
+./full-test.sh
+```
+
+![alt text](assets/image-6.png)
+
+### 6. Include the output of the “file” utility after building writer with CROSS_COMPILE in an “assignments/assignment2/fileresult.txt” file for grading purposes.
+
+```bash
+cd ~/Documents/aeld-assignment-2/finder-app
+make CROSS_COMPILE=aarch64-none-linux-gnu- clean
+make CROSS_COMPILE=aarch64-none-linux-gnu-
+file writer > ../assignments/assignment2/fileresult.txt
+```
+
+![alt text](assets/image-7.png)
+
+![alt text](assets/image-8.png)
+
+### 7. Check git remote/branch, then commit and push
+
+```bash
+# Check current remote (confirm it points to your assignment-2 repo)
+git remote -v
+
+# Check current branch and status
+git status
+git branch
+
+# Stage and commit everything
+git add -A
+git commit -m "Assignment 2: writer.c, Makefile, finder-test.sh, cross-compile.txt, fileresult.txt"
+
+# Push to main (adjust branch name if yours is 'master')
+git push origin main
+```
+
+![alt text](assets/image-9.png)
+
+
+
+[GitHub Actions run](https://github.com/prashantgautamofficial/aeld-assignment-2/actions/runs/33364479246)
+
+
+![alt text](assets/image-10.png)
+
+![alt text](assets/image-11.png)
+
