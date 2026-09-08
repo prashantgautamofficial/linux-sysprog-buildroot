@@ -713,7 +713,6 @@ That should turn up something like .github/workflows/build.yml or similar. Once 
 ```bash
 cat .github/workflows/<filename>.yml
 ```
-Paste that content — I need to see specifically:
 
 Any uses: webfactory/ssh-agent@... (or similar) step
 The secrets.<NAME> reference it pulls the key from

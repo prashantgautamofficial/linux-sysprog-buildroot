@@ -289,6 +289,11 @@ directory. On the target rootfs none of that layout exists — everything lands 
 
 A typical diff looks like:
 
+```bash
+cd finder-app
+nano finder-test.sh
+```
+
 #### Original ####
 
 ```bash
@@ -376,7 +381,7 @@ set -u
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
-username=$(cat /etc/finder-app/conf/username.txt)
+username=$(cat /etc/finder-app/conf/username.txt)         # earler it was : username=$(cat conf/username.txt)
 
 if [ $# -lt 3 ]
 then
@@ -399,7 +404,7 @@ echo "Writing ${NUMFILES} files containing string ${WRITESTR} to ${WRITEDIR}"
 rm -rf "${WRITEDIR}"
 
 # create $WRITEDIR if not assignment1
-assignment=`cat /etc/finder-app/conf/assignment.txt`
+assignment=`cat /etc/finder-app/conf/assignment.txt`       # earler it was : assignment=`cat ../conf/assignment.txt`   
 
 if [ $assignment != 'assignment1' ]
 then
@@ -520,7 +525,7 @@ git log -1 --format="%H"
 ```
 
 ```
-a61c05f6b49d3253b2ecea1107d63004cf10e9c5
+888a713e4a8672623ad3e6879f4d34252c9d112c
 ```
 
 Note the **SSH clone URL** for this repo (you'll need it in the next step),
@@ -531,6 +536,10 @@ Note the **SSH clone URL** for this repo (you'll need it in the next step),
 ## 7. Create `external.desc` , `external.mk` and `Config.in` inside `base_external` directory
 
 ### 7a. `base_external/external.desc`
+
+```bash
+cd ~/Documents/aeld-assignment-4
+```
 
 ```bash
 cat > base_external/external.desc << 'EOF'
@@ -583,7 +592,7 @@ This is the core generic-package makefile. Use the **git site method** with the
 #
 ################################################################################
 
-AESD_ASSIGNMENTS_VERSION = a61c05f6b49d3253b2ecea1107d63004cf10e9c5
+AESD_ASSIGNMENTS_VERSION = 888a713e4a8672623ad3e6879f4d34252c9d112c
 AESD_ASSIGNMENTS_SITE = git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git
 AESD_ASSIGNMENTS_SITE_METHOD = git
 AESD_ASSIGNMENTS_GIT_SUBMODULES = YES
@@ -626,7 +635,7 @@ Key points, straight from the assignment text and the generic-package tutorial:
 ## 8. Select the package in Buildroot's config
 
 ```bash
-cd buildroot
+cd ~/Documents/aeld-assignment-4/buildroot
 make menuconfig
 ```
 
@@ -721,7 +730,7 @@ In short:
    `https://github.com/prashantgautamofficial/aeld-assignment-3-and-later/settings/keys/new`  
    
    ```bash
-   ssh-keygen -t ed25519 -f ~/.ssh/aesd_deploy_key -C "aesd-ci" -N ""
+   ssh-keygen -t ed25519 -f ~/.ssh/aesd_deploy__a3_key -C "aesd-application-a3-ci" -N ""
    ```
 
 2. Add the **public** key as a Deploy Key (read access is enough) on the repo.
@@ -732,11 +741,15 @@ In short:
 
 3. Add the **private** key as a repository secret.
 
-    ```bash
-    eval "$(ssh-agent -s)"
-    ssh-add ~/.ssh/aesd_deploy_key
-    ssh-add -l
-    ```
+```bash
+cd ~/Documents/aeld-assignment-4
+```
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/aesd_deploy__a3_key
+ssh-add -l
+```
 
 4. Confirm your self-hosted Actions runner is registered and online for this repo, per the same wiki page.
 
