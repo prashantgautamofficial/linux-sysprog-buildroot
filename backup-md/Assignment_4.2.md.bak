@@ -80,7 +80,7 @@ git merge buildroot-assignments-base/master --allow-unrelated-histories
 > Add `--allow-unrelated-histories` if your empty repo's initial commit has no shared
 > history with the base repo (Git will tell you if it's needed).
 
-![alt text](image-20.png)
+![alt text](assets/image-20.png)
 
 
 You should now see, at the repo root:
@@ -95,7 +95,7 @@ README.md
 .gitmodules (may reference assignment-autotest already)
 ```
 
-![alt text](image-22.png)
+![alt text](assets/image-22.png)
 
 Initialize submodules that came with the base repo (this pulls the
 `assignment-autotest` nested repo used for automated grading):
@@ -103,7 +103,7 @@ Initialize submodules that came with the base repo (this pulls the
 ```bash
 git submodule update --init --recursive
 ```
-![alt text](image-23.png)
+![alt text](assets/image-23.png)
 
 Commit the merge:
 
@@ -115,7 +115,7 @@ git commit -m "Merge buildroot-assignments-base starter code"
 git push origin master
 ```
 
-![alt text](image-24.png)
+![alt text](assets/image-24.png)
 
 ---
 
@@ -129,7 +129,7 @@ submodule at the repo root:
 git submodule add https://gitlab.com/buildroot.org/buildroot.git buildroot
 ```
 
-![alt text](image-25.png)
+![alt text](assets/image-25.png)
 
 ```bash
 cd buildroot
@@ -138,7 +138,7 @@ git checkout 2024.02.13
 cd ..
 ```
 
-![alt text](image-26.png)
+![alt text](assets/image-26.png)
 
 This clones `buildroot/` and creates/updates `.gitmodules` with a `buildroot` entry
 tracking branch `2024.02.13`.
@@ -161,7 +161,7 @@ git branch -a
 git log -1 --oneline
 cd ..
 ```
-![alt text](image-27.png)
+![alt text](assets/image-27.png)
 
 **Commit the submodule now**, before running `./build.sh` for the first time — the
 instructions are explicit about this because it locks in the exact commit hash that CI
@@ -174,7 +174,7 @@ git commit -m "Add buildroot submodule pinned to 2024.02.13"
 git push origin master
 ```
 
-![alt text](image-28.png)
+![alt text](assets/image-28.png)
 
 ---
 
@@ -186,13 +186,13 @@ From the repo root:
 ./build.sh
 ```
 
-![alt text](image-29.png)
+![alt text](assets/image-29.png)
 
 ```bash
 ./save-config.sh
 ```
 
-![alt text](image-30.png)
+![alt text](assets/image-30.png)
 
 ### MISSING BUILDROOT CONFIGURATION FILE - FIX
 
@@ -214,9 +214,9 @@ cat base_external/configs/aesd_qemu_defconfig | head
 ```
 
 
-![alt text](image-31.png)
+![alt text](assets/image-31.png)
 
-![alt text](image-32.png)
+![alt text](assets/image-32.png)
 
 
 On a fresh checkout with no `buildroot/.config`, `build.sh` (from the base repo) will
@@ -234,7 +234,7 @@ Confirm the config landed:
 grep -E "BR2_aarch64|BR2_TARGET_GENERIC_HOSTNAME|BR2_arm" buildroot/.config | head
 ```
 
-![alt text](image-34.png)
+![alt text](assets/image-34.png)
 
 ---
 
@@ -288,6 +288,11 @@ directory. On the target rootfs none of that layout exists — everything lands 
   `/tmp/assignment4-result.txt`.
 
 A typical diff looks like:
+
+```bash
+cd finder-app
+nano finder-test.sh
+```
 
 #### Original ####
 
@@ -376,7 +381,7 @@ set -u
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
-username=$(cat /etc/finder-app/conf/username.txt)
+username=$(cat /etc/finder-app/conf/username.txt)         # earler it was : username=$(cat conf/username.txt)
 
 if [ $# -lt 3 ]
 then
@@ -399,7 +404,7 @@ echo "Writing ${NUMFILES} files containing string ${WRITESTR} to ${WRITEDIR}"
 rm -rf "${WRITEDIR}"
 
 # create $WRITEDIR if not assignment1
-assignment=`cat /etc/finder-app/conf/assignment.txt`
+assignment=`cat /etc/finder-app/conf/assignment.txt`       # earler it was : assignment=`cat ../conf/assignment.txt`   
 
 if [ $assignment != 'assignment1' ]
 then
@@ -513,14 +518,13 @@ git add finder-app/finder-test.sh finder-app/Makefile   # or wherever these live
 git commit -m "Assignment 4: PATH-friendly finder-test.sh, honor CC in writer Makefile"
 git push origin main
 ```
-
+#### Get Commit Hash
 ```bash
-# Get Commit Hash
 git log -1 --format="%H"
 ```
 
 ```
-a61c05f6b49d3253b2ecea1107d63004cf10e9c5
+888a713e4a8672623ad3e6879f4d34252c9d112c
 ```
 
 Note the **SSH clone URL** for this repo (you'll need it in the next step),
@@ -531,6 +535,10 @@ Note the **SSH clone URL** for this repo (you'll need it in the next step),
 ## 7. Create `external.desc` , `external.mk` and `Config.in` inside `base_external` directory
 
 ### 7a. `base_external/external.desc`
+
+```bash
+cd ~/Documents/aeld-assignment-4
+```
 
 ```bash
 cat > base_external/external.desc << 'EOF'
@@ -576,6 +584,15 @@ config BR2_PACKAGE_AESD_ASSIGNMENTS
 This is the core generic-package makefile. Use the **git site method** with the
 **SSH URL** (not https) so the CI runner's deploy key can authenticate:
 
+```bash
+git ls-remote git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git HEAD
+```
+
+```
+ca13fc6f1351257e4d90ef4dc8296029e998cefa
+```
+
+
 ```make
 ################################################################################
 #
@@ -583,7 +600,7 @@ This is the core generic-package makefile. Use the **git site method** with the
 #
 ################################################################################
 
-AESD_ASSIGNMENTS_VERSION = a61c05f6b49d3253b2ecea1107d63004cf10e9c5
+AESD_ASSIGNMENTS_VERSION = ca13fc6f1351257e4d90ef4dc8296029e998cefa
 AESD_ASSIGNMENTS_SITE = git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git
 AESD_ASSIGNMENTS_SITE_METHOD = git
 AESD_ASSIGNMENTS_GIT_SUBMODULES = YES
@@ -625,8 +642,30 @@ Key points, straight from the assignment text and the generic-package tutorial:
 
 ## 8. Select the package in Buildroot's config
 
+1. Confirm `BR2_EXTERNAL` was actually exported before launching menuconfig:
+
 ```bash
-cd buildroot
+echo $BR2_EXTERNAL
+```
+
+If this is empty, that's the cause — menuconfig was launched without the external tree registered for that shell session.
+
+2. Re-export it and relaunch from the correct directory
+
+Based on your project structure (aeld-assignment-4 doubling as the Assignment 5 working directory), this should be run from the repo root that contains your base_external/aesd-assignments external tree:
+
+```bash
+# or wherever your BR2_EXTERNAL tree root actually is
+cd ~/Documents/aeld-assignment-4                     
+
+# adjust path to match your actual external tree dir name
+export BR2_EXTERNAL=/home/prashant/Documents/aeld-assignment-4/base_external      
+
+make -C buildroot menuconfig
+```
+
+```bash
+cd ~/Documents/aeld-assignment-4/buildroot
 make menuconfig
 ```
 
@@ -645,7 +684,7 @@ Save this selection back into your tracked defconfig:
 git diff base_external/configs/aesd_qemu_defconfig
 ```
 
-![alt text](image-35.png)
+![alt text](assets/image-35.png)
 
 You should now see a new line such as `BR2_PACKAGE_AESD_ASSIGNMENTS=y` added. Commit:
 
@@ -655,7 +694,7 @@ git commit -m "Enable aesd-assignments package in defconfig"
 git push origin master
 ```
 
-![alt text](image-36.png)
+![alt text](assets/image-36.png)
 
 ---
 
@@ -672,7 +711,7 @@ make -C "${SCRIPT_DIR}/buildroot" distclean
 EOF
 ```
 
-![alt text](image-37.png)
+![alt text](assets/image-37.png)
 
 ```bash
 chmod +x clean.sh
@@ -721,26 +760,30 @@ In short:
    `https://github.com/prashantgautamofficial/aeld-assignment-3-and-later/settings/keys/new`  
    
    ```bash
-   ssh-keygen -t ed25519 -f ~/.ssh/aesd_deploy_key -C "aesd-ci" -N ""
+   ssh-keygen -t ed25519 -f ~/.ssh/aesd_deploy__a3_key -C "aesd-application-a3-ci" -N ""
    ```
 
 2. Add the **public** key as a Deploy Key (read access is enough) on the repo.
    
    `https://github.com/prashantgautamofficial/aeld-assignment-3-and-later/settings/keys/new` 
       
-   ![alt text](image-38.png)
+   ![alt text](assets/image-38.png)
 
 3. Add the **private** key as a repository secret.
 
-    ```bash
-    eval "$(ssh-agent -s)"
-    ssh-add ~/.ssh/aesd_deploy_key
-    ssh-add -l
-    ```
+```bash
+cd ~/Documents/aeld-assignment-4
+```
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/aesd_deploy__a3_key
+ssh-add -l
+```
 
 4. Confirm your self-hosted Actions runner is registered and online for this repo, per the same wiki page.
 
-![alt text](image-39.png)
+![alt text](assets/image-39.png)
 
 This is what makes the `git@github.com:...` SSH URL in `aesd-assignments.mk` resolvable non-interactively during CI builds.
 
@@ -777,7 +820,7 @@ file doesn't match your repo's actual `finder-app/` layout.
 ./runqemu.sh
 ```
 
-![alt text](image-40.png)
+![alt text](assets/image-40.png)
 
 This launches `qemu-system-aarch64` using the machine model defined at
 `buildroot/board/qemu/aarch64-virt/` (kernel, DTB, rootfs image paths, `-M virt`, etc.,
@@ -793,10 +836,13 @@ cat /etc/finder-app/conf/assignment.txt
 cd / && finder-test.sh
 echo $?
 cat /tmp/assignment4-result.txt
+
+# Goto Step 17 to copy this result to host
+
 grep -i "root:" /var/log/messages | tail
 ```
 
-![alt text](image-41.png)
+![alt text](assets/image-41.png)
 
 `finder-test.sh` should run successfully from any directory (proving PATH resolution
 works) and `/var/log/messages` should contain the `writer` app's syslog output.
@@ -821,14 +867,15 @@ cd ..
 ./save-config.sh
 ```
 
-![alt text](image-42.png)
+![alt text](assets/image-42.png)
 
 
 ```bash
-git diff base_external/configs/aesd_qemu_defconfig   # should show BR2_PACKAGE_DROPBEAR=y
+git diff base_external/configs/aesd_qemu_defconfig   
 ```
+##### should show BR2_PACKAGE_DROPBEAR=y
 
-![alt text](image-43.png)
+![alt text](assets/image-43.png)
 
 ---
 
@@ -854,6 +901,8 @@ Build with both changes included:
 ./build.sh
 ```
 
+![alt text](image-50.png)
+
 ---
 
 ## 16. Verify SSH access
@@ -869,8 +918,9 @@ The base repo's QEMU network setup typically forwards host port `10022` → gues
 
 ```bash
 ssh -p 10022 root@localhost
-# password: root
+
 ```
+#### # password: root
 
 If host key checking gets in the way across repeated rebuilds (new host key each boot),
 use:
@@ -897,7 +947,7 @@ Create the destination directory first if it doesn't exist:
 mkdir -p /home/prashant/Documents/aeld-assignment-3-and-later/assignments/assignment4
 ```
 
-![alt text](image-44.png)
+![alt text](assets/image-44.png)
 
 Then, in the **source** repo:
 
@@ -923,7 +973,11 @@ repo's actual script):
 Make sure `sshpass` is installed on the host (§0) — the script needs it to log in
 non-interactively as `root`/`root`.
 
-![alt text](image-45.png)
+![alt text](assets/image-45.png)
+
+## FOLLOWING STEPS ARE NOT REQUIRED IF `./full-test.sh` IS OK
+
+![alt text](image-51.png)
 
 ### 18.1. Edit Github actions config
 
@@ -1022,7 +1076,7 @@ git branch          # to check the branch
 git push origin master
 ```
 
-![alt text](image-46.png)
+![alt text](assets/image-46.png)
 
 
 ### 18.2. Add SSH_PRIVATE_KEY to Github
@@ -1033,7 +1087,7 @@ cd ~/Documents/aeld-assignment-4/
 ls -la ~/.ssh/ | grep aesd
 ```
 
-![alt text](image-49.png)
+![alt text](assets/image-49.png)
 
 Go to:
 
@@ -1041,9 +1095,9 @@ https://github.com/prashantgautamofficial/aeld-assignment-4/settings/secrets/act
 
 paste the secret key obtained above with name: `SSH_PRIVATE_KEY`
 
-![alt text](image-47.png)
+![alt text](assets/image-47.png)
 
-![alt text](image-48.png)
+![alt text](assets/image-48.png)
 
 
 Add the **private** key as a repository secret.

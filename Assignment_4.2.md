@@ -518,9 +518,8 @@ git add finder-app/finder-test.sh finder-app/Makefile   # or wherever these live
 git commit -m "Assignment 4: PATH-friendly finder-test.sh, honor CC in writer Makefile"
 git push origin main
 ```
-
+#### Get Commit Hash
 ```bash
-# Get Commit Hash
 git log -1 --format="%H"
 ```
 
@@ -585,6 +584,15 @@ config BR2_PACKAGE_AESD_ASSIGNMENTS
 This is the core generic-package makefile. Use the **git site method** with the
 **SSH URL** (not https) so the CI runner's deploy key can authenticate:
 
+```bash
+git ls-remote git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git HEAD
+```
+
+```
+ca13fc6f1351257e4d90ef4dc8296029e998cefa
+```
+
+
 ```make
 ################################################################################
 #
@@ -592,7 +600,7 @@ This is the core generic-package makefile. Use the **git site method** with the
 #
 ################################################################################
 
-AESD_ASSIGNMENTS_VERSION = 888a713e4a8672623ad3e6879f4d34252c9d112c
+AESD_ASSIGNMENTS_VERSION = ca13fc6f1351257e4d90ef4dc8296029e998cefa
 AESD_ASSIGNMENTS_SITE = git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git
 AESD_ASSIGNMENTS_SITE_METHOD = git
 AESD_ASSIGNMENTS_GIT_SUBMODULES = YES
@@ -633,6 +641,28 @@ Key points, straight from the assignment text and the generic-package tutorial:
 ---
 
 ## 8. Select the package in Buildroot's config
+
+1. Confirm `BR2_EXTERNAL` was actually exported before launching menuconfig:
+
+```bash
+echo $BR2_EXTERNAL
+```
+
+If this is empty, that's the cause — menuconfig was launched without the external tree registered for that shell session.
+
+2. Re-export it and relaunch from the correct directory
+
+Based on your project structure (aeld-assignment-4 doubling as the Assignment 5 working directory), this should be run from the repo root that contains your base_external/aesd-assignments external tree:
+
+```bash
+# or wherever your BR2_EXTERNAL tree root actually is
+cd ~/Documents/aeld-assignment-4                     
+
+# adjust path to match your actual external tree dir name
+export BR2_EXTERNAL=/home/prashant/Documents/aeld-assignment-4/base_external      
+
+make -C buildroot menuconfig
+```
 
 ```bash
 cd ~/Documents/aeld-assignment-4/buildroot
@@ -806,6 +836,9 @@ cat /etc/finder-app/conf/assignment.txt
 cd / && finder-test.sh
 echo $?
 cat /tmp/assignment4-result.txt
+
+# Goto Step 17 to copy this result to host
+
 grep -i "root:" /var/log/messages | tail
 ```
 
@@ -838,8 +871,9 @@ cd ..
 
 
 ```bash
-git diff base_external/configs/aesd_qemu_defconfig   # should show BR2_PACKAGE_DROPBEAR=y
+git diff base_external/configs/aesd_qemu_defconfig   
 ```
+##### should show BR2_PACKAGE_DROPBEAR=y
 
 ![alt text](assets/image-43.png)
 
@@ -867,6 +901,8 @@ Build with both changes included:
 ./build.sh
 ```
 
+![alt text](assets/image-50.png)
+
 ---
 
 ## 16. Verify SSH access
@@ -882,8 +918,9 @@ The base repo's QEMU network setup typically forwards host port `10022` → gues
 
 ```bash
 ssh -p 10022 root@localhost
-# password: root
+
 ```
+#### # password: root
 
 If host key checking gets in the way across repeated rebuilds (new host key each boot),
 use:
@@ -937,6 +974,10 @@ Make sure `sshpass` is installed on the host (§0) — the script needs it to lo
 non-interactively as `root`/`root`.
 
 ![alt text](assets/image-45.png)
+
+## FOLLOWING STEPS ARE NOT REQUIRED IF `./full-test.sh` IS OK
+
+![alt text](assets/image-51.png)
 
 ### 18.1. Edit Github actions config
 
