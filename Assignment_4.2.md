@@ -584,12 +584,19 @@ config BR2_PACKAGE_AESD_ASSIGNMENTS
 This is the core generic-package makefile. Use the **git site method** with the
 **SSH URL** (not https) so the CI runner's deploy key can authenticate:
 
+
 ```bash
 git ls-remote git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git HEAD
 ```
 
 ```
 ca13fc6f1351257e4d90ef4dc8296029e998cefa
+```
+
+```bash
+cd ~/Documents/aeld-assignment-4
+find . -iname "aesd-assignments.mk"
+cat base_external/package/aesd-assignments/aesd-assignments.mk
 ```
 
 

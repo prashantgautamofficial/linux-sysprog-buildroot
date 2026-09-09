@@ -738,6 +738,14 @@ cat ~/.ssh/aesd-deploy-key
 ## Step 4 — Update `aesd-assignments.mk` in the new repo
 
 ```bash
+git ls-remote git@github.com:prashantgautamofficial/aeld-assignment-3-and-later.git HEAD
+```
+
+```
+1701e8152a141af54340313dd4ec3cbbe255464c
+```
+
+```bash
 cd ~/Documents/aeld-assignment-5
 find . -iname "aesd-assignments.mk"
 cat base_external/package/aesd-assignments/aesd-assignments.mk
@@ -752,7 +760,7 @@ Target shape of the file:
 #
 ################################################################################
 
-AESD_ASSIGNMENTS_VERSION = 555eede434d62471b030370f1e037f8bc3e46655
+AESD_ASSIGNMENTS_VERSION = 1701e8152a141af54340313dd4ec3cbbe255464c
 AESD_ASSIGNMENTS_SITE = git@github.com:cu-ecen-aeld/aeld-assignment-3-and-later.git
 AESD_ASSIGNMENTS_SITE_METHOD = git
 AESD_ASSIGNMENTS_GIT_SUBMODULES = YES
@@ -1074,11 +1082,13 @@ netstat -tln | grep 9000
 If BusyBox doesn't include `nc` (netcat) as an applet, test the socket **from the
 host** instead, using the port-9000 forward:
 
+
+### on host, separate terminal
+
 ```bash
-# on host, separate terminal
 echo "test data" | nc localhost 9000
-# if host nc is missing: sudo apt-get install -y netcat-openbsd
 ```
+### if host nc is missing: sudo apt-get install -y netcat-openbsd
 
 Then confirm on the QEMU side:
 
